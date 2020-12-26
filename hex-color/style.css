@@ -1,0 +1,27 @@
+.inputDiv {
+ position:relative;
+ top: 50px;
+ margin:auto;
+ border-radius: 15px;
+ width: 200px;
+ background-color:rgba(000,000,000,0.3);
+}
+.outputDiv {
+ position:relative;
+ top: 150px;
+}
+#parag {
+ font-size: 24px;
+ text-align: center; 
+ margin: auto; 
+ background-color: white; 
+ padding: 18px; 
+ width: 240px; 
+ border-radius: 15px
+}
+#colorInput{
+ margin-top:20px;
+ background-color:rgba(000,000,000,0.0);
+ border:0px solid;
+ width:46px;
+}
