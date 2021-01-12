@@ -1,2 +1,2 @@
-This app contains 100 different crypto currencies prices with using coin API.
+This app contains 100 different cryptocurrency prices with using coin API.
 
