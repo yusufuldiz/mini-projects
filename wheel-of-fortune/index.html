@@ -8,8 +8,8 @@
 </head>
 <body>
 <div class="wheel-container">
-    <canvas id="wheelCanvas" width="360" height="360"></canvas>
-    <button id="spinButton">Spin</button>
+    <canvas id="wheelCanvas" width="360px" height="360px"></canvas>
+    <button id="spinButton">Çevir bakalım</button>
 </div>
 
 <style>
@@ -88,13 +88,24 @@ function drawWheel() {
     }
 
     // Draw pointer
+    var pointerLength = 40; // Length of the pointer
+    var pointerWidth = 20; // Width of the pointer
+    var pointerX = wheel.x;
+    var pointerY = wheel.y - wheel.radius + pointerLength / 2;
+
+    ctx.save();
+    ctx.translate(pointerX, pointerY);
+    ctx.rotate(Math.PI);
+    ctx.fillStyle = "#2F3538";
     ctx.beginPath();
-    ctx.moveTo(wheel.x, wheel.y);
-    ctx.lineTo(wheel.x, wheel.y - wheel.radius);
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 5;
-    ctx.stroke();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-pointerWidth / 2, pointerLength);
+    ctx.lineTo(pointerWidth / 2, pointerLength);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
 }
+
 
 // Update the wheel rotation
 function updateWheel() {
