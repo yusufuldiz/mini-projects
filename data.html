@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkish Super League Table</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #0073e6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1 style="text-align: center;">Turkish Super League Table</h1>
+<table id="league-table">
+    <thead>
+        <tr>
+            <th>Position</th>
+            <th>Team</th>
+            <th>Played</th>
+            <th>Won</th>
+            <th>Drawn</th>
+            <th>Lost</th>
+            <th>Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- League table rows will be populated here -->
+    </tbody>
+</table>
+
+<script>
+    const apiKey = 'abcda5da7b968369473c5d05d98fa8f4'; // Replace with your actual API key
+    const leagueId = 1958; // Turkish Super League ID in API-Football
+
+    fetch(`https://v3.football.api-sports.io/standings?league=${leagueId}&season=2024`, {
+        method: 'GET',
+        headers: {
+            'x-rapidapi-key': apiKey,
+            'x-rapidapi-host': 'v3.football.api-sports.io'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const tableBody = document.getElementById('league-table').getElementsByTagName('tbody')[0];
+        const standings = data.response[0].league.standings[0]; // Get the first standings table
+        
+        standings.forEach(team => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = team.rank;
+            row.insertCell(1).textContent = team.team.name;
+            row.insertCell(2).textContent = team.all.played;
+            row.insertCell(3).textContent = team.all.win;
+            row.insertCell(4).textContent = team.all.draw;
+            row.insertCell(5).textContent = team.all.lose;
+            row.insertCell(6).textContent = team.points;
+        });
+    })
+    .catch(error => console.error('Error fetching data:', error));
+</script>
+
+</body>
+</html>
+
+
+
