@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #number-display {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+        #response-section {
+            display: none;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Number Memory Game</h1>
+    <div id="number-display">Get Ready...</div>
+    <div id="response-section">
+        <p>Enter the numbers larger than their preceding number (in order):</p>
+        <input type="text" id="user-input" placeholder="Enter numbers here">
+        <button onclick="checkAnswer()">Submit</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        let numbers = [];
+        let currentIndex = 0;
+        let totalRounds = 6;
+        let currentRound = 6; // Start with 6 numbers
+        let score = 0;
+        let totalCorrectEntries = 0;
+        let totalRequiredEntries = 0;
+
+        function showNumbers() {
+            if (currentIndex < currentRound) {
+                const randomNum = Math.floor(Math.random() * 10);
+                numbers.push(randomNum);
+                document.getElementById('number-display').innerText = randomNum;
+                currentIndex++;
+                setTimeout(showNumbers, 1000);
+            } else {
+                document.getElementById('number-display').innerText = 'Done!';
+                document.getElementById('response-section').style.display = 'block';
+            }
+        }
+
+        function checkAnswer() {
+            const userInput = document.getElementById('user-input').value;
+            const userNumbers = userInput.split('').map(Number);
+
+            const correctNumbers = numbers.filter((num, index) => index === 0 || num > numbers[index - 1]);
+            totalRequiredEntries += correctNumbers.length; // Track total required answers
+
+            const isCorrect = JSON.stringify(userNumbers) === JSON.stringify(correctNumbers);
+
+            if (isCorrect) {
+                score += correctNumbers.length; // Add correct number count to score
+                totalCorrectEntries += correctNumbers.length; // Track total correct entries
+                document.getElementById('result').innerText = `Correct! Score: ${score}. The numbers were: ${correctNumbers.join(', ')}`;
+            } else {
+                // Calculate correctly guessed numbers even if the answer is wrong
+                const correctCount = userNumbers.filter((num, idx) => num === correctNumbers[idx]).length;
+                totalCorrectEntries += correctCount;
+                document.getElementById('result').innerText = `Wrong! The correct numbers were: ${correctNumbers.join(', ')}. Score: ${score}`;
+            }
+
+            // Prepare for next round or finish game
+            setTimeout(() => {
+                document.getElementById('response-section').style.display = 'none';
+                document.getElementById('result').innerText = '';
+                document.getElementById('user-input').value = ''; // Clear the input box
+
+                if (currentRound < 16) {
+                    startNextRound();
+                } else {
+                    endGame();
+                }
+            }, 3000);
+        }
+
+        function startNextRound() {
+            numbers = [];
+            currentIndex = 0;
+            currentRound++;
+            showNumbers();
+        }
+
+        function endGame() {
+            const successRate = ((totalCorrectEntries / totalRequiredEntries) * 100).toFixed(2);
+            document.getElementById('number-display').innerText = `Game Over! Final Score: ${score}. Success Rate: ${successRate}%`;
+        }
+
+        // Start the game
+        showNumbers();
+    </script>
+</body>
+</html>
