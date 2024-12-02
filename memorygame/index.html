@@ -14,7 +14,7 @@
             font-size: 48px;
             margin: 20px 0;
         }
-        #response-section {
+        #response-section, #game-section, #restart-button {
             display: none;
         }
         input {
@@ -35,13 +35,21 @@
 </head>
 <body>
     <h1>Number Memory Game</h1>
-    <div id="number-display">Get Ready...</div>
-    <div id="response-section">
-        <p>Enter the numbers larger than their preceding number (in order):</p>
-        <input type="text" id="user-input" placeholder="Enter numbers here">
-        <button onclick="checkAnswer()">Submit</button>
+    <div id="start-section">
+        <button onclick="startGame()">Start</button>
     </div>
-    <div id="result"></div>
+    <div id="game-section">
+        <div id="number-display">Get Ready...</div>
+        <div id="response-section">
+            <p>Enter the numbers larger than their preceding number (in order):</p>
+            <input type="text" id="user-input" placeholder="Enter numbers here">
+            <button onclick="checkAnswer()">Submit</button>
+        </div>
+        <div id="result"></div>
+    </div>
+    <div id="restart-button">
+        <button onclick="restartGame()">Restart</button>
+    </div>
 
     <script>
         let numbers = [];
@@ -51,6 +59,12 @@
         let score = 0;
         let totalCorrectEntries = 0;
         let totalRequiredEntries = 0;
+
+        function startGame() {
+            document.getElementById('start-section').style.display = 'none';
+            document.getElementById('game-section').style.display = 'block';
+            showNumbers();
+        }
 
         function showNumbers() {
             if (currentIndex < currentRound) {
@@ -70,26 +84,24 @@
             const userNumbers = userInput.split('').map(Number);
 
             const correctNumbers = numbers.filter((num, index) => index === 0 || num > numbers[index - 1]);
-            totalRequiredEntries += correctNumbers.length; // Track total required answers
+            totalRequiredEntries += correctNumbers.length;
 
             const isCorrect = JSON.stringify(userNumbers) === JSON.stringify(correctNumbers);
 
             if (isCorrect) {
-                score += correctNumbers.length; // Add correct number count to score
-                totalCorrectEntries += correctNumbers.length; // Track total correct entries
+                score += correctNumbers.length;
+                totalCorrectEntries += correctNumbers.length;
                 document.getElementById('result').innerText = `Correct! Score: ${score}. The numbers were: ${correctNumbers.join(', ')}`;
             } else {
-                // Calculate correctly guessed numbers even if the answer is wrong
                 const correctCount = userNumbers.filter((num, idx) => num === correctNumbers[idx]).length;
                 totalCorrectEntries += correctCount;
                 document.getElementById('result').innerText = `Wrong! The correct numbers were: ${correctNumbers.join(', ')}. Score: ${score}`;
             }
 
-            // Prepare for next round or finish game
             setTimeout(() => {
                 document.getElementById('response-section').style.display = 'none';
                 document.getElementById('result').innerText = '';
-                document.getElementById('user-input').value = ''; // Clear the input box
+                document.getElementById('user-input').value = '';
 
                 if (currentRound < 16) {
                     startNextRound();
@@ -109,10 +121,23 @@
         function endGame() {
             const successRate = ((totalCorrectEntries / totalRequiredEntries) * 100).toFixed(2);
             document.getElementById('number-display').innerText = `Game Over! Final Score: ${score}. Success Rate: ${successRate}%`;
+            document.getElementById('restart-button').style.display = 'block';
         }
 
-        // Start the game
-        showNumbers();
+        function restartGame() {
+            document.getElementById('restart-button').style.display = 'none';
+            document.getElementById('game-section').style.display = 'none';
+            document.getElementById('start-section').style.display = 'block';
+
+            // Reset variables
+            numbers = [];
+            currentIndex = 0;
+            totalRounds = 6;
+            currentRound = 6;
+            score = 0;
+            totalCorrectEntries = 0;
+            totalRequiredEntries = 0;
+        }
     </script>
 </body>
 </html>
