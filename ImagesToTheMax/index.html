@@ -3,33 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daire Bölme - Mobil Uyumlu</title>
+    <title>Özel Sürpriz Deneyimi</title>
     <style>
-        body { 
-            margin: 0; 
-            padding: 0;
-            overflow: hidden; 
-            background: #1a1a1a; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh;
-            touch-action: none; /* Tarayıcının varsayılan touch hareketlerini devre dışı bırakır */
-        }
-        canvas { 
-            display: block;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
-        }
+        body { margin: 0; padding: 0; overflow: hidden; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; touch-action: none; }
+        canvas { display: block; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
 
 <script>
+// --- DİNAMİK GÖRSEL AYARI ---
+const urlParams = new URLSearchParams(window.location.search);
+const userImage = urlParams.get('img'); // Linkteki ?img= parametresini okur
+
+// Eğer linkte görsel yoksa gösterilecek varsayılan görsel
+const defaultImage = 'https://picsum.photos/id/237/800/800'; 
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-// Ekran boyutuna göre canvas'ı boyutlandır (Kare yapıda tutar)
 const sideLength = Math.min(window.innerWidth, window.innerHeight);
 
 const config = {
@@ -37,7 +29,7 @@ const config = {
     minRadius: 3, 
     maxSplitLevel: 2, 
     animationSpeed: 0.15,
-    imgSrc: 'https://cdn.bulbapp.io/frontend/images/8c22569c-f21a-409d-966c-b21f333209b7/1' // Örnek köpek resmi
+    imgSrc: userImage || defaultImage // Varsa kullanıcı görselini, yoksa varsayılanı kullan
 };
 
 let circles = [];
@@ -75,15 +67,14 @@ class Circle {
 
     update() {
         this.currentR += (this.targetR - this.currentR) * config.animationSpeed;
-        if (Math.abs(this.targetR - this.currentR) < 0.1) {
-            this.currentR = this.targetR;
-        }
+        if (Math.abs(this.targetR - this.currentR) < 0.1) this.currentR = this.targetR;
     }
 }
 
 const img = new Image();
-img.crossOrigin = "Anonymous";
+img.crossOrigin = "Anonymous"; // Dışarıdan gelen resimlere erişim izni için şart!
 img.src = config.imgSrc;
+
 img.onload = () => {
     ctx.drawImage(img, 0, 0, config.size, config.size);
     imgData = ctx.getImageData(0, 0, config.size, config.size).data;
@@ -93,6 +84,11 @@ img.onload = () => {
     firstCircle.currentR = firstCircle.targetR;
     circles.push(firstCircle);
     animate();
+};
+
+// Hata yönetimi: Görsel yüklenmezse (CORS hatası vb.)
+img.onerror = () => {
+    alert("Görsel yüklenemedi. Lütfen geçerli bir direkt resim linki kullanın.");
 };
 
 function animate() {
@@ -110,12 +106,10 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// Ortak kontrol fonksiyonu
 function handleInteraction(px, py) {
     for (let i = circles.length - 1; i >= 0; i--) {
         const c = circles[i];
         const dist = Math.hypot(px - c.x, py - c.y);
-
         if (dist < c.r && (c.r > config.minRadius || c.splitLevel < config.maxSplitLevel)) {
             const nr = c.r / 2;
             const nsLevel = c.splitLevel + 1;
@@ -128,19 +122,10 @@ function handleInteraction(px, py) {
     }
 }
 
-// Mouse olayları
 canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     handleInteraction(e.clientX - rect.left, e.clientY - rect.top);
 });
-
-// Dokunma olayları (Mobil)
-canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    const rect = canvas.getBoundingClientRect();
-    const touch = e.touches[0];
-    handleInteraction(touch.clientX - rect.left, touch.clientY - rect.top);
-}, { passive: false });
 
 canvas.addEventListener('touchmove', (e) => {
     e.preventDefault();
@@ -148,7 +133,6 @@ canvas.addEventListener('touchmove', (e) => {
     const touch = e.touches[0];
     handleInteraction(touch.clientX - rect.left, touch.clientY - rect.top);
 }, { passive: false });
-
 </script>
 </body>
 </html>
