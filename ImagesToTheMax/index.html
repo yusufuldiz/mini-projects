@@ -2,10 +2,24 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Daire Bölme Efekti - Geliştirilmiş</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daire Bölme - Mobil Uyumlu</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        canvas { cursor: crosshair; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        body { 
+            margin: 0; 
+            padding: 0;
+            overflow: hidden; 
+            background: #1a1a1a; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            touch-action: none; /* Tarayıcının varsayılan touch hareketlerini devre dışı bırakır */
+        }
+        canvas { 
+            display: block;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+        }
     </style>
 </head>
 <body>
@@ -15,17 +29,20 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
+// Ekran boyutuna göre canvas'ı boyutlandır (Kare yapıda tutar)
+const sideLength = Math.min(window.innerWidth, window.innerHeight);
+
 const config = {
-    size: 512, // Kare boyutu
-    minRadius: 2, // En küçük daire boyutu (Azaltıldı)
-    maxSplitLevel: 2, // Ek bölünme seviyesi (Yeni)
-    animationSpeed: 0.1, // Animasyon hızı (Yeni)
-    imgSrc: 'https://play-lh.googleusercontent.com/bnRoOZwIeGRlErapRNtLRer9uE0Vh_5rINIGWrAAES0MZes9qDa3E_2TSrLeHWqoOQ' // Örnek görsel
+    size: sideLength,
+    minRadius: 3, 
+    maxSplitLevel: 2, 
+    animationSpeed: 0.15,
+    imgSrc: 'https://cdn.bulbapp.io/frontend/images/8c22569c-f21a-409d-966c-b21f333209b7/1' // Örnek köpek resmi
 };
 
 let circles = [];
 let imgData;
-let splittingCircles = []; // Animasyon halindeki daireler (Yeni)
+let splittingCircles = [];
 
 canvas.width = config.size;
 canvas.height = config.size;
@@ -35,30 +52,28 @@ class Circle {
         this.x = x;
         this.y = y;
         this.r = r;
-        this.splitLevel = splitLevel; // Bölünme derinliği (Yeni)
+        this.splitLevel = splitLevel;
         this.color = this.getColor(x, y);
-        this.targetR = r; // Animasyon için hedef yarıçap (Yeni)
-        this.currentR = 0; // Animasyon için mevcut yarıçap (Yeni)
+        this.targetR = r;
+        this.currentR = 0;
     }
 
     getColor(x, y) {
         if (!imgData) return '#fff';
-        const ix = Math.floor(x);
-        const iy = Math.floor(y);
+        const ix = Math.floor((x / config.size) * config.size);
+        const iy = Math.floor((y / config.size) * config.size);
         const index = (iy * config.size + ix) * 4;
         return `rgb(${imgData[index]}, ${imgData[index+1]}, ${imgData[index+2]})`;
     }
 
     draw() {
         ctx.beginPath();
-        // Animasyonlu yarıçapı kullan
-        ctx.arc(this.x, this.y, Math.max(0, this.currentR - 0.5), 0, Math.PI * 2); 
+        ctx.arc(this.x, this.y, Math.max(0, this.currentR - 0.4), 0, Math.PI * 2); 
         ctx.fillStyle = this.color;
         ctx.fill();
     }
 
     update() {
-        // Hedef yarıçapa doğru pürüzsüz geçiş
         this.currentR += (this.targetR - this.currentR) * config.animationSpeed;
         if (Math.abs(this.targetR - this.currentR) < 0.1) {
             this.currentR = this.targetR;
@@ -70,66 +85,70 @@ const img = new Image();
 img.crossOrigin = "Anonymous";
 img.src = config.imgSrc;
 img.onload = () => {
-    // Görsel piksellerini oku
     ctx.drawImage(img, 0, 0, config.size, config.size);
     imgData = ctx.getImageData(0, 0, config.size, config.size).data;
     ctx.clearRect(0, 0, config.size, config.size);
     
-    // İlk büyük daireyi ekle
     const firstCircle = new Circle(config.size/2, config.size/2, config.size/2);
-    firstCircle.currentR = firstCircle.targetR; // İlk daire anında görünsün
+    firstCircle.currentR = firstCircle.targetR;
     circles.push(firstCircle);
-    animate(); // Animasyon döngüsünü başlat (Değişti)
+    animate();
 };
 
 function animate() {
     ctx.clearRect(0, 0, config.size, config.size);
-    
-    // Tüm daireleri güncelle ve çiz
-    circles.forEach(c => {
-        c.update();
-        c.draw();
-    });
-
-    // Animasyon halindeki daireleri güncelle ve çiz
+    circles.forEach(c => { c.update(); c.draw(); });
     for (let i = splittingCircles.length - 1; i >= 0; i--) {
         const c = splittingCircles[i];
         c.update();
         c.draw();
-        // Animasyon tamamlandıysa normal daireler listesine ekle
         if (c.currentR === c.targetR) {
             circles.push(c);
             splittingCircles.splice(i, 1);
         }
     }
-    
-    requestAnimationFrame(animate); // Sonraki kareyi iste (Değişti)
+    requestAnimationFrame(animate);
 }
 
-canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
+// Ortak kontrol fonksiyonu
+function handleInteraction(px, py) {
     for (let i = circles.length - 1; i >= 0; i--) {
         const c = circles[i];
-        const dist = Math.hypot(mx - c.x, my - c.y);
+        const dist = Math.hypot(px - c.x, py - c.y);
 
-        // Bölünme koşulu: Fare dairenin içindeyse VE (yarıçap minimumdan büyükse VEYA ek bölünme seviyesi aşılmadıysa)
         if (dist < c.r && (c.r > config.minRadius || c.splitLevel < config.maxSplitLevel)) {
-            // Daireyi 4 yeni parçaya böl
             const nr = c.r / 2;
-            const nsLevel = c.splitLevel + 1; // Yeni bölünme seviyesi
+            const nsLevel = c.splitLevel + 1;
             circles.splice(i, 1);
-
-            // Yeni daireleri animasyon listesine ekle
             splittingCircles.push(new Circle(c.x - nr, c.y - nr, nr, nsLevel));
             splittingCircles.push(new Circle(c.x + nr, c.y - nr, nr, nsLevel));
             splittingCircles.push(new Circle(c.x - nr, c.y + nr, nr, nsLevel));
             splittingCircles.push(new Circle(c.x + nr, c.y + nr, nr, nsLevel));
         }
     }
+}
+
+// Mouse olayları
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    handleInteraction(e.clientX - rect.left, e.clientY - rect.top);
 });
+
+// Dokunma olayları (Mobil)
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    handleInteraction(touch.clientX - rect.left, touch.clientY - rect.top);
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    handleInteraction(touch.clientX - rect.left, touch.clientY - rect.top);
+}, { passive: false });
+
 </script>
 </body>
 </html>
