@@ -1,0 +1,12 @@
+{
+  "name": "Chill Drive Anatolia",
+  "short_name": "Chill Drive Anatolia",
+  "id": "com.example.gamename",
+  "description": "For now this is just a driving experience, no game at all. More cars and environments will be added soon. \n\nPlease leave a review of your experience.\n\nThanks for playing, I hope you enjoy!\n\n\n***3.11.2026 Update***\n\n- Chassis improved.\n- Database added for earning money and owning cars.\n- A new car model added: Villager GLX.\n- Arcade mode added.\n- New chunk added: ruins.\n\n***5.11.2026 Update***\n- City chunk improved.\n- 2 new cars added: Comrade, Auswanderer.\n\n***9.11.2026 Update***\n- Improvements on the map.\n- Mobile controls changed, steering wheel added.\n- 2nd camera option added.\n- Radio added.\n\n***12.11.2026 Update***\n- Improvements on the map.\n- Improvements in car mechanics.\n- A new car added.",
+  "orientation": "landscape",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "black",
+  "categories": ["games", "entertainment"],
+  "icons": []
+}
